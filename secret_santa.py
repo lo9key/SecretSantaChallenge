@@ -1,7 +1,7 @@
 import random
 # placeholder default list of names
 names = 'amy bob charles dwight edwardo fernando gary howie'.split()
-names = list(range(10000000))
+
 def shuffle_santas(names):
 	# copy the list of names to a new list, then shuffle it
 	shuffled_names = names[:]
