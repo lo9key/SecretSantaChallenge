@@ -1,21 +1,22 @@
 import random
-names = 'amy bob charles david edward fernando gary'.split()
+# placeholder default list of names
+names = 'amy bob charles dwight edwardo fernando gary howie'.split()
+names = list(range(10000000))
 def shuffle_santas(names):
-	result, swap, safe = dict(), list(), list()
 	# copy the list of names to a new list, then shuffle it
 	shuffled_names = names[:]
 	random.shuffle(shuffled_names)
-	# check for santas who drew themselves
-	for santa, giftee in zip(names, shuffled_names):
-		if santa == giftee:
-			# make a list of santas who need to redraw
-			swap.append(santa)
-		else:
-			safe.append(santa)
-			result[santa] = giftee
-	for santa in swap:
-		# swap giftees with a santa on the safe list
-		temp = random.choice(safe)
-		result[santa] = result[temp]
-		result[temp] = santa
+	# make a dictionary of names, shuffled_names
+	result = dict(zip(names,shuffled_names))
+
+	# check the result for santas who drew themselves
+	for santa,giftee in result.items():
+		while santa == giftee:
+			# santa drew themselves, swap with someone else
+			temp = random.choice(result.keys())
+			result[santa] = result[temp]
+			giftee = result[temp] # breaks the while loop
+			result[temp] = giftee
 	return result
+
+print shuffle_santas(names)
