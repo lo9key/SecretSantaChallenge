@@ -1,6 +1,8 @@
 import random
-# placeholder default list of names
-names = 'amy bob charles dwight edwardo fernando gary howie'.split()
+# input list of names
+
+print "Please enter the names of the Secret Santa's:"
+names = raw_input().split(",")
 
 def shuffle_santas(names):
 	# copy the list of names to a new list, then shuffle it
