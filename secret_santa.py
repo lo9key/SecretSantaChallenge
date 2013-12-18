@@ -1,24 +1,135 @@
 import random
-# input list of names
+santas = {}
 
-print "Please enter the names of the Secret Santa's:"
-names = raw_input().split(",")
+class Person(object):
+        def __init__(self,name,email,blacklist):
+                self.name = name
+                self.email = email
+                # blacklist may contain multiple names seperated by spaces,
+                # and should always include the santa's own name.
+                self.blacklist = ' '.join([name,blacklist])
+                self.giftee = None
 
-def shuffle_santas(names):
-	# copy the list of names to a new list, then shuffle it
-	shuffled_names = names[:]
-	random.shuffle(shuffled_names)
-	# make a dictionary of names, shuffled_names
-	result = dict(zip(names,shuffled_names))
+        def display(self, name):
+                return self.name, self.email, self.blacklist, self.giftee
 
-	# check the result for santas who drew themselves
-	for santa,giftee in result.items():
-		while santa == giftee:
-			# santa drew themselves, swap with someone else
-			temp = random.choice(result.keys())
-			result[santa] = result[temp]
-			giftee = result[temp] # breaks the while loop
-			result[temp] = giftee
-	return result
+def draw(name, list, swap = False):
+        avail_santas = list[:]
+        for canidate in avail_santas[:]:
+                if canidate in santas[name].blacklist:
+                        print 'inside blacklist'
+                        # canidate on blacklist, ineligible
+                        avail_santas.remove(canidate)
+                elif swap == True and name in santas[canidate][1]:
+                        # canidate has name on blacklist, ineligible
+                        avail_santas.remove(canidate)
+        # all santas have been checked, now pick one.
+        if len(avail_santas) > 0:
+                # choose a random name from the avail_santas
+                choice = random.choice(avail_santas)
+                santas[name][2] = choice
+                if swap == False: # this is the first draw
+                        giftees.remove(choice)
+                else: # this is a redraw, choice redraws from remaining giftees
+                        draw(choice,giftees)
+        else: # no good choices left, name must redraw.
+                redraw.append(name)
+                choice = None
+        return name,choice
 
-print shuffle_santas(names)
+def shuffle(santas):
+        # Set up variables for shuffling
+        giftees = [x for x in santas]
+        random.shuffle(giftees)
+        redraw = [] # santas that could not draw
+        # sort santas by the length of their blacklist
+        # make a dictionary of name:length of blacklist
+        picky = {n:len(santas[n].blacklist.split()) for n in santas}
+        # easy_santas are sorted lowest blacklist length to highest
+        easy_santas = sorted(picky.keys(), key=picky.get)
+        # picky_santas are sorted highest blacklist length to lowest
+        picky_santas = sorted(picky.keys(), key=picky.get, reverse=True)
+        print 'Debugging:',easy_santas,picky_santas
+        print 'Debugging:',type(easy_santas[0])
+
+        # for debugging
+        # starting with the most picky santas, match santas to giftees
+        for name in picky_santas:
+                draw(name, giftees)
+        # fix santas who need to redraw
+        for name in redraw:
+                # start with santas most likely to be able to trade
+                draw(name, easy_santas, True)
+
+        # display results
+        for s in santas:
+                print s,'drew',santas[s][2]
+
+def menu():
+        print 'Welcome to the Secret Santa python app.'
+        while True: # loop until they shuffle
+                input = ''
+                while len(input) < 2: # make sure they entered something
+                        print 'Available commands are: ADD, DEL, DISPLAY, SHUFFLE, and HELP.'
+                        print 'Example: >add ted ted@aol.com jane nancy sue'
+                        # break input apart into a list
+                        input = raw_input('> ')
+
+                if input[:3].lower() == 'add': # add
+                        # prepare input for the function
+                        # Split input into add, name, email, blacklist
+                        input = input.split(None,3)
+                        del input[0] # first item was 'add'
+                        # assign variables even if input is < 3 pieces
+                        # 3 vars = (~3-6 vars)[:3]
+                        name, email, blacklist = (input + [None]*3)[:3]
+                        # todo - This still needs work, potentially lets users have empty names
+                        if not name:
+                                name = raw_input("Please enter the Santa's name: ")
+                        if not email:
+                                email = raw_input("Please enter %s's email: " % name)
+                        if not blacklist:
+                                print "Besides themselves, is there anyone %s should not draw?" % name
+                                blacklist = raw_input("Seperate names by spaces, or leave blank: ")
+                        # Capitalize names and blacklists
+                        name = name.capitalize()
+                        blacklist = blacklist.title()
+                        # add to santas dict as name:object
+                        santas[name] = Person(name,email,blacklist)
+
+                elif input[:3].lower() == 'del': # delete
+                        # todo - deleting needs work
+                        print 'Deleting..'
+
+                elif input[:3].lower() == 'dis': # display
+                        # todo - Should be expanded
+                        for s in santas:
+                                print santas[s].display(s)
+
+                elif input[:3].lower() == 'shu': # shuffle
+                        print 'Shuffling..'
+                        shuffle(santas)
+                        break
+
+                elif input[:3].lower() == 'sam': # sample data
+                        data = [
+                        ('Jo','j@','Jo Levi'),
+                        ('Ted','t@','Ted Amy'),
+                        ('Amy','a@','Amy'),
+                        ('Bob','b@','Bob')
+                        ]
+                        for name, email, blacklist in data:
+                                santas[name] = Person(name,email,blacklist)
+
+                else: # help
+                        print 'Here are some tips on using this program:'
+                        print ' 1 - To add names use the following syntax:'
+                        print '   > add name email blacklist'
+                        print '   > add ted ted@aol.com jane nancy sue'
+                        print ' 2 - You can delete a santa using:'
+                        print '   > delete ted'
+                        print ' 3 - Or, shuffle the Santa list and assign everyone a giftee:'
+                        print '   > shuffle'
+
+if __name__ == '__main__':
+        menu()
