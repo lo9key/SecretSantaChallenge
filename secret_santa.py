@@ -13,21 +13,20 @@ class Person(object):
         def display(self, name):
                 return self.name, self.email, self.blacklist, self.giftee
 
-def draw(name, list, swap = False):
-        avail_santas = list[:]
+def draw(name, giftees, swap = False):
+        avail_santas = giftees[:]
         for canidate in avail_santas[:]:
                 if canidate in santas[name].blacklist:
-                        print 'inside blacklist'
                         # canidate on blacklist, ineligible
                         avail_santas.remove(canidate)
-                elif swap == True and name in santas[canidate][1]:
+                elif swap is True and name in santas[canidate].blacklist:
                         # canidate has name on blacklist, ineligible
                         avail_santas.remove(canidate)
         # all santas have been checked, now pick one.
         if len(avail_santas) > 0:
                 # choose a random name from the avail_santas
                 choice = random.choice(avail_santas)
-                santas[name][2] = choice
+                santas[name].blacklist = choice
                 if swap == False: # this is the first draw
                         giftees.remove(choice)
                 else: # this is a redraw, choice redraws from remaining giftees
@@ -35,7 +34,7 @@ def draw(name, list, swap = False):
         else: # no good choices left, name must redraw.
                 redraw.append(name)
                 choice = None
-        return name,choice
+        return giftees
 
 def shuffle(santas):
         # Set up variables for shuffling
@@ -49,8 +48,6 @@ def shuffle(santas):
         easy_santas = sorted(picky.keys(), key=picky.get)
         # picky_santas are sorted highest blacklist length to lowest
         picky_santas = sorted(picky.keys(), key=picky.get, reverse=True)
-        print 'Debugging:',easy_santas,picky_santas
-        print 'Debugging:',type(easy_santas[0])
 
         # for debugging
         # starting with the most picky santas, match santas to giftees
@@ -63,7 +60,7 @@ def shuffle(santas):
 
         # display results
         for s in santas:
-                print s,'drew',santas[s][2]
+                print s,'drew',santas[s].giftee
 
 def menu():
         print 'Welcome to the Secret Santa python app.'
